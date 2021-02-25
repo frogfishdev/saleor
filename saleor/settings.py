@@ -31,7 +31,7 @@ def get_bool_from_env(name, default_value):
     return default_value
 
 
-DEBUG = get_bool_from_env("DEBUG", True)
+DEBUG = True
 
 SITE_ID = 1
 
@@ -585,5 +585,5 @@ JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
 )
 
 
-AUTHORIZENET_API_LOGIN_ID = '979FeLuLX'
-AUTHORIZENET_TRANSACTION_KEY = '42993v965XRbwtKx'
+AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID", "979FeLuLX")
+AUTHORIZENET_TRANSACTION_KEY = os.environ.get("AUTHORIZENET_TRANSACTION_KEY", "42993v965XRbwtKx")

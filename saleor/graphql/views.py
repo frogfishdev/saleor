@@ -216,6 +216,7 @@ class GraphQLView(View):
         with opentracing.global_tracer().start_active_span("graphql_query") as scope:
             span = scope.span
             span.set_tag(opentracing.tags.COMPONENT, "GraphQL")
+            
 
             query, variables, operation_name = self.get_graphql_params(request, data)
 
@@ -251,6 +252,7 @@ class GraphQLView(View):
 
     @staticmethod
     def parse_body(request: HttpRequest):
+        
         content_type = request.content_type
         if content_type == "application/graphql":
             return {"query": request.body.decode("utf-8")}
@@ -268,7 +270,6 @@ class GraphQLView(View):
         operation_name = data.get("operationName")
         if operation_name == "null":
             operation_name = None
-
         if request.content_type == "multipart/form-data":
             operations = json.loads(data.get("operations", "{}"))
             files_map = json.loads(data.get("map", "{}"))

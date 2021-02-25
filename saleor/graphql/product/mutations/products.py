@@ -1721,6 +1721,7 @@ class ProductImageCreate(BaseMutation):
             info, data["product"], field="product", only_type=Product
         )
         image_data = info.context.FILES.get(data["image"])
+        print(data)
         validate_image_file(image_data, "image")
 
         image = product.images.create(image=image_data, alt=data.get("alt", ""))
