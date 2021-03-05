@@ -98,7 +98,7 @@
           {% if fulfillment.tracking_number %}
             {% if fulfillment.is_tracking_number_url %}
               {% blocktrans trimmed with tracking_number=fulfillment.tracking_number context "Fulfillment confirmation email text" %}
-                You can track your shipment with <a href="{{ tracking_number }}" id="tNum">"{{converted_tracking}}"</a> link.
+                You can track your shipment with this link <a href="{{ tracking_number }}" id="tNum">"{{converted_tracking}}"</a>.
               {% endblocktrans %}
             {% else %}
               {% blocktrans trimmed with tracking_number=fulfillment.tracking_number context "Fulfillment confirmation email text" %}
@@ -109,18 +109,18 @@
     
                 </td>
               </tr>
-            
+
               <tr>
                 <td align="left" style="font-size: 0px; padding: 10px 25px; word-break: break-word;">
                   
-      <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">{% if digital_lines %}
-            {% blocktrans trimmed context "Fulfillment digital products email text" %}
-              You can download your digital products by clicking in download link(s).
-            {% endblocktrans %}
-          {% endif %}</div>
+                  <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                    For returns and questions please email returns@dominiqueapparel.com
+                  </div>
     
                 </td>
               </tr>
+            
+              
             
         </tbody>
       </table>

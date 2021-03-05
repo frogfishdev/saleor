@@ -121,7 +121,7 @@ def transaction_for_customer(
     
     # Create the controller and get response
     createtransactioncontroller = createTransactionController(createtransactionrequest)
-    # createtransactioncontroller.setenvironment('https://api2.authorize.net/xml/v1/request.api')
+    createtransactioncontroller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     createtransactioncontroller.execute()
 
     response = createtransactioncontroller.getresponse()
@@ -188,6 +188,7 @@ def void(payment_information: PaymentData, config: GatewayConfig) -> GatewayResp
 
     createtransactionrequest.transactionRequest = transactionrequest
     createtransactioncontroller = createTransactionController(createtransactionrequest)
+    createtransactioncontroller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     createtransactioncontroller.execute()
 
     response = createtransactioncontroller.getresponse()
@@ -274,7 +275,7 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
 
     create_transaction_request.transactionRequest = transaction_request
     create_transaction_controller = createTransactionController(create_transaction_request)
-    # create_transaction_controller.setenvironment('https://api2.authorize.net/xml/v1/request.api')
+    create_transaction_controller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     create_transaction_controller.execute()
 
     response = create_transaction_controller.getresponse()
