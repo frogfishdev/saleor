@@ -57,6 +57,7 @@ def authorize(
 
 
 
+
 def transaction_for_customer(
     payment_information: PaymentData, config: GatewayConfig
 ):
