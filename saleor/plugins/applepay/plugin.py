@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from django.core.handlers.wsgi import WSGIRequest
@@ -30,7 +32,9 @@ class ApplePayPlugin(BasePlugin):
                 json=validation_payload,
                 cert=('./merchant_id.pem', './applepay_merchant.key')
             )
-            print(vars(r))
-
-            return JsonResponse(data=r)
+            t = json.loads(r.content)
+            print(t)
+            j = JsonResponse(data=json.loads(r.content))
+            j["Access-Control-Allow-Origin"] = "*"
+            return j
         return HttpResponseNotFound()
