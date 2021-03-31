@@ -128,7 +128,7 @@ USE_TZ = True
 
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
-EMAIL_URL = 'smtp://v.juliano6363@gmail.com:77vVanportMa^@smtp.gmail.com:465/?ssl=True'
+EMAIL_URL = os.environ.get("EMAIL_URL")
 SENDGRID_USERNAME = os.environ.get("SENDGRID_USERNAME")
 SENDGRID_PASSWORD = os.environ.get("SENDGRID_PASSWORD")
 if not EMAIL_URL and SENDGRID_USERNAME and SENDGRID_PASSWORD:
@@ -136,6 +136,8 @@ if not EMAIL_URL and SENDGRID_USERNAME and SENDGRID_PASSWORD:
         SENDGRID_USERNAME,
         SENDGRID_PASSWORD,
     )
+if not EMAIL_URL:
+    EMAIL_URL = 'smtp://tempuser@gmail.com:temppass@smtp.gmail.com:465/?ssl=True'
 email_config = dj_email_url.parse(
     EMAIL_URL
 )
@@ -263,6 +265,7 @@ INSTALLED_APPS = [
     "django_countries",
     "django_filters",
     "phonenumber_field",
+    "sslserver",
 ]
 
 
@@ -391,7 +394,7 @@ TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
-ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1"))
+ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.7.190"))
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -520,6 +523,7 @@ PLUGINS = [
     "saleor.payment.gateways.adyen.plugin.AdyenGatewayPlugin",
     "saleor.plugins.invoicing.plugin.InvoicingPlugin",
     "saleor.payment.gateways.authorizenet.plugin.AuthorizeNetGatewayPlugin",
+    "saleor.plugins.applepay.plugin.ApplePayPlugin"
 ]
 
 # Plugin discovery
@@ -587,3 +591,9 @@ JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
 
 AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID", "979FeLuLX")
 AUTHORIZENET_TRANSACTION_KEY = os.environ.get("AUTHORIZENET_TRANSACTION_KEY", "42993v965XRbwtKx")
+AUTHORIZENET_ENVIRONMENT = os.environ.get("AUTHORIZENET_ENVIRONMENT", "https://apitest.authorize.net/xml/v1/request.api")
+
+
+APPLE_PAY_MERCHANT_ID = os.environ.get("APPLE_PAY_MERCHANT_ID", "")
+APPLE_PAY_DOMAIN = os.environ.get("APPLE_PAY_DOMAIN", "")
+APPLE_PAY_DISPLAY_NAME = os.environ.get("APPLE_PAY_DISPLAY_NAME", "")

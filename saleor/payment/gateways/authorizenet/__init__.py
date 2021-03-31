@@ -30,8 +30,29 @@ def authorize(
     suc = False
     if error is None:
         suc = True
-    
+
     kind = TransactionKind.CAPTURE
+
+    if result == None:
+        return GatewayResponse(
+            is_success=suc,
+            action_required=False,
+            kind=kind,
+            amount=payment_information.amount,
+            currency=payment_information.currency,
+            # customer_id=result.get("customer_id"),
+            transaction_id=payment_information.token,
+            error=error,
+            payment_method_info=PaymentMethodInfo(
+                last_4="1234",
+                exp_year=2222,
+                exp_month=12,
+                brand="applepay",
+                name="applepay",
+                type="card",
+            ),
+        )
+
     credit_card = result.get("credit_card", {})
     
     return GatewayResponse(
@@ -57,9 +78,12 @@ def authorize(
 
 
 
+
 def transaction_for_customer(
     payment_information: PaymentData, config: GatewayConfig
 ):
+    if 'applepay' in payment_information.token:
+        return None, None
     merchant_auth = apicontractsv1.merchantAuthenticationType()
     merchant_auth.name = settings.AUTHORIZENET_API_LOGIN_ID
     merchant_auth.transactionKey = settings.AUTHORIZENET_TRANSACTION_KEY
@@ -121,7 +145,7 @@ def transaction_for_customer(
     
     # Create the controller and get response
     createtransactioncontroller = createTransactionController(createtransactionrequest)
-    # createtransactioncontroller.setenvironment('https://api2.authorize.net/xml/v1/request.api')
+    createtransactioncontroller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     createtransactioncontroller.execute()
 
     response = createtransactioncontroller.getresponse()
@@ -188,6 +212,7 @@ def void(payment_information: PaymentData, config: GatewayConfig) -> GatewayResp
 
     createtransactionrequest.transactionRequest = transactionrequest
     createtransactioncontroller = createTransactionController(createtransactionrequest)
+    createtransactioncontroller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     createtransactioncontroller.execute()
 
     response = createtransactioncontroller.getresponse()
@@ -274,7 +299,7 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
 
     create_transaction_request.transactionRequest = transaction_request
     create_transaction_controller = createTransactionController(create_transaction_request)
-    # create_transaction_controller.setenvironment('https://api2.authorize.net/xml/v1/request.api')
+    create_transaction_controller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     create_transaction_controller.execute()
 
     response = create_transaction_controller.getresponse()
