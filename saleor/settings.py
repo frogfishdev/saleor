@@ -136,6 +136,8 @@ if not EMAIL_URL and SENDGRID_USERNAME and SENDGRID_PASSWORD:
         SENDGRID_USERNAME,
         SENDGRID_PASSWORD,
     )
+if not EMAIL_URL:
+    EMAIL_URL = 'smtp://tempuser@gmail.com:temppass@smtp.gmail.com:465/?ssl=True'
 email_config = dj_email_url.parse(
     EMAIL_URL
 )
