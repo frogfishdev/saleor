@@ -30,8 +30,29 @@ def authorize(
     suc = False
     if error is None:
         suc = True
-    
+
     kind = TransactionKind.CAPTURE
+
+    if result == None:
+        return GatewayResponse(
+            is_success=suc,
+            action_required=False,
+            kind=kind,
+            amount=payment_information.amount,
+            currency=payment_information.currency,
+            # customer_id=result.get("customer_id"),
+            transaction_id=payment_information.token,
+            error=error,
+            payment_method_info=PaymentMethodInfo(
+                last_4="1234",
+                exp_year=2222,
+                exp_month=12,
+                brand="applepay",
+                name="applepay",
+                type="card",
+            ),
+        )
+
     credit_card = result.get("credit_card", {})
     
     return GatewayResponse(
@@ -61,6 +82,8 @@ def authorize(
 def transaction_for_customer(
     payment_information: PaymentData, config: GatewayConfig
 ):
+    if 'applepay' in payment_information.token:
+        return None, None
     merchant_auth = apicontractsv1.merchantAuthenticationType()
     merchant_auth.name = settings.AUTHORIZENET_API_LOGIN_ID
     merchant_auth.transactionKey = settings.AUTHORIZENET_TRANSACTION_KEY
