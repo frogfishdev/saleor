@@ -163,8 +163,15 @@ class ReturnsPlugin(BasePlugin):
             prod = p_models.Product.objects.get(id=line.variant.product.id)
             prod_variants = p_models.ProductVariant.objects.filter(product=prod)
             variant_attrs = p_models.AttributeVariant.objects.filter(product_type=prod.product_type)
-            
-            
+
+            quantity_returned = 0
+            returned_lines = return_models.ReturnLine.objects.filter(order_line_id=line.id)
+
+            for returned_line in returned_lines:
+                quantity_returned += returned_line.quantity_returned
+            print(quantity_returned)
+
+
             exchangeable_variant_attrs = []
             exchangable_variants = []
             sku_quantity_map = {}
@@ -173,7 +180,7 @@ class ReturnsPlugin(BasePlugin):
 
             for v in prod_variants:
                 s = warehouse_models.Stock.objects.filter(product_variant=v)[0]
-                
+
                 cursor.execute('''SELECT * FROM product_assignedvariantattribute where variant_id =''' + str(v.id))
                 for c in dictfetchall(cursor):
                     exchangeable_assignments_list.append(c['id'])
@@ -247,6 +254,7 @@ class ReturnsPlugin(BasePlugin):
                 'is_shipping_required': line.is_shipping_required, 
                 'quantity': line.quantity, 
                 'quantity_fulfilled': line.quantity_fulfilled, 
+                'quantity_returned': quantity_returned, 
                 'currency': line.currency, 
                 'unit_price_net_amount': line.unit_price_net_amount, 
                 'unit_price_gross_amount': line.unit_price_gross_amount, 
