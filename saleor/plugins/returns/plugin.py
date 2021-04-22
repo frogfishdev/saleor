@@ -13,6 +13,7 @@ from reportlab.pdfgen import canvas
 
 from ..base_plugin import BasePlugin
 
+from saleor.returns import models as return_models
 from saleor.order import models as order_models
 from saleor.product import models as p_models
 from saleor.warehouse import models as warehouse_models
@@ -60,8 +61,8 @@ class ReturnsPlugin(BasePlugin):
 
 
     def save_return(self, request_dict):
-        print(json.dumps(request_dict, sort_keys=True, indent=4))
 
+        comment = request_dict["additionalComments"]
         onum = int(request_dict["orderNumber"])
         i = 1
         order_i = None
@@ -72,6 +73,29 @@ class ReturnsPlugin(BasePlugin):
                 break
             i = i + 1
 
+        return_header = return_models.ReturnHeader.objects.create(
+             order_id=onum,
+             comment=comment
+        )
+
+        for i in range(len(request_dict["return_lines"])):
+            if request_dict["return_lines"][i]["exchangeSku"] != None:
+                exchange_variant_id = p_models.ProductVariant.objects.get(sku=request_dict["return_lines"][i]["exchangeSku"]).id
+            else:
+                exchange_variant_id = None
+
+
+            return_line = return_models.ReturnLine.objects.create(
+                return_header_id = int(return_header.id),
+                return_variant_id = int(request_dict["return_lines"][i]["returnVariantId"]),
+                order_line_id = int(request_dict["return_lines"][i]["id"]),
+                return_reason = request_dict["return_lines"][i]["reason"],
+                quantity_returned = request_dict["return_lines"][i]["quantity"],
+                return_type = request_dict["return_lines"][i]["returnType"].lower(),
+                exchange_variant_id = exchange_variant_id,
+                exchange_sku = request_dict["return_lines"][i]["exchangeSku"],
+                return_sku = request_dict["return_lines"][i]["returnSku"]
+            )
 
         cursor = connection.cursor()
         cursor.execute('''SELECT * FROM account_address WHERE id = ''' + str(order_i.shipping_address_id))
@@ -118,7 +142,7 @@ class ReturnsPlugin(BasePlugin):
         w = t - timedelta(days=35)
         d = order_i.created
         if not w <= d <= t:
-            return None, 'Order is outside window'
+            return None, 'Order is not eligible for return'
 
         s = order_i.shipping_address.postal_code == request_dict['zip']
         b = order_i.billing_address.postal_code == request_dict['zip']
@@ -139,8 +163,15 @@ class ReturnsPlugin(BasePlugin):
             prod = p_models.Product.objects.get(id=line.variant.product.id)
             prod_variants = p_models.ProductVariant.objects.filter(product=prod)
             variant_attrs = p_models.AttributeVariant.objects.filter(product_type=prod.product_type)
-            
-            
+
+            quantity_returned = 0
+            returned_lines = return_models.ReturnLine.objects.filter(order_line_id=line.id)
+
+            for returned_line in returned_lines:
+                quantity_returned += returned_line.quantity_returned
+            print(quantity_returned)
+
+
             exchangeable_variant_attrs = []
             exchangable_variants = []
             sku_quantity_map = {}
@@ -149,7 +180,7 @@ class ReturnsPlugin(BasePlugin):
 
             for v in prod_variants:
                 s = warehouse_models.Stock.objects.filter(product_variant=v)[0]
-                
+
                 cursor.execute('''SELECT * FROM product_assignedvariantattribute where variant_id =''' + str(v.id))
                 for c in dictfetchall(cursor):
                     exchangeable_assignments_list.append(c['id'])
@@ -223,6 +254,7 @@ class ReturnsPlugin(BasePlugin):
                 'is_shipping_required': line.is_shipping_required, 
                 'quantity': line.quantity, 
                 'quantity_fulfilled': line.quantity_fulfilled, 
+                'quantity_returned': quantity_returned, 
                 'currency': line.currency, 
                 'unit_price_net_amount': line.unit_price_net_amount, 
                 'unit_price_gross_amount': line.unit_price_gross_amount, 
