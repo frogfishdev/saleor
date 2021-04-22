@@ -10,9 +10,10 @@ class ReturnHeader(models.Model):
         related_name="return_order",
         on_delete=models.CASCADE
     )
-    misc_refund_amount = 0
+    misc_refund_amount = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     date_submitted = models.DateTimeField(default=now, editable=False)
     date_received_in_wharehouse = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=255, default='open')
     comment = models.TextField()
 
 class ReturnLine(models.Model):
@@ -54,9 +55,10 @@ class ReturnLine(models.Model):
         null=True,
     )
     exchange_sku = models.CharField(max_length=255, null=True, blank=True)
-    returned_to_stock = models.BooleanField(default=False)
-    accepted = models.BooleanField(default=False)
+    returned_to_stock_quantity = models.IntegerField(default=0) 
     accepted_quantity = models.IntegerField(default=0) 
+    reject_quantity = models.IntegerField(default=0) 
+    exchange_quantity = models.IntegerField(default=0) 
     rejected_reason = models.CharField(max_length=255, null=True, blank=True)
     processed_by = models.CharField(max_length=255, null=True, blank=True)
     date_processed = models.DateTimeField(null=True, blank=True)
