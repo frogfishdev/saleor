@@ -63,7 +63,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://saleor:saleor@localhost:5432/saleor", conn_max_age=600
+        default="postgres://saleor:saleor@97.107.132.33:5432/saleor", conn_max_age=600
     )
 }
 
@@ -254,6 +254,7 @@ INSTALLED_APPS = [
     "saleor.webhook",
     "saleor.wishlist",
     "saleor.app",
+    "saleor.returns",
     # External apps
     "versatileimagefield",
     "django_measurement",
@@ -597,3 +598,6 @@ AUTHORIZENET_ENVIRONMENT = os.environ.get("AUTHORIZENET_ENVIRONMENT", "https://a
 APPLE_PAY_MERCHANT_ID = os.environ.get("APPLE_PAY_MERCHANT_ID", "")
 APPLE_PAY_DOMAIN = os.environ.get("APPLE_PAY_DOMAIN", "")
 APPLE_PAY_DISPLAY_NAME = os.environ.get("APPLE_PAY_DISPLAY_NAME", "")
+
+FROGFISH_API_TOKEN = os.environ.get("FROGFISH_API_TOKEN", "c204c31a-1868-45c0-b4c0-fbed3deefad3")
+FROGFISH_API_URL = os.environ.get("FROGFISH_API_URL", "http://localhost:8080/FrogfishAPI/RMASaleor_Post")

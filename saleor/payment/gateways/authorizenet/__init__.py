@@ -265,6 +265,7 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
     merchant_auth = apicontractsv1.merchantAuthenticationType()
     merchant_auth.name = settings.AUTHORIZENET_API_LOGIN_ID
     merchant_auth.transactionKey = settings.AUTHORIZENET_TRANSACTION_KEY
+    print(payment_information.token)
     t_id = payment_information.token.split('---')[0]
 
     transaction_details_request = apicontractsv1.getTransactionDetailsRequest()
@@ -272,14 +273,15 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
     transaction_details_request.transId = t_id
 
     transaction_details_controller = getTransactionDetailsController(transaction_details_request)
-
+    transaction_details_controller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
     transaction_details_controller.execute()
 
     transaction_details_response = transaction_details_controller.getresponse()
-
     credit_card = apicontractsv1.creditCardType()
     credit_card.cardNumber = str(transaction_details_response.transaction.payment.creditCard.cardNumber).replace('X', '')
     credit_card.expirationDate = "XXXX"
+
+    print(credit_card.cardNumber)
 
     # Add the payment data to a paymentType object
     payment_one = apicontractsv1.paymentType()
@@ -292,7 +294,7 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
     transaction_request.refTransId = t_id
     transaction_request.payment = payment_one
 
-
+    print(transaction_request.amount)
     create_transaction_request = apicontractsv1.createTransactionRequest()
     create_transaction_request.merchantAuthentication = merchant_auth
     create_transaction_request.refId = str("ref {}".format(time.time())).split('.')[0]
