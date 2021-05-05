@@ -1,6 +1,6 @@
 barcode_string = "=DA111|{order_number}"
 
-barcode = "/var/www/html/saleor/saleor/plugins/returns/code128.png"
+barcode = "/var/www/html/saleor/code128.png"
 logo = "/var/www/html/saleor/saleor/plugins/returns/logo.png"
 
 shipto_address = [

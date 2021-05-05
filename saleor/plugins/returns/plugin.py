@@ -1,13 +1,16 @@
+from credit import send_credit
 import io
 import os
 import json
 from decimal import *
+from datetime import datetime, timezone
 
 import requests
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
+from django.utils.timezone import now
 
 from reportlab.pdfgen import canvas
 
@@ -51,6 +54,20 @@ class ReturnsPlugin(BasePlugin):
                     j["Access-Control-Allow-Origin"] = "*"
                     return j
 
+            if request_dict['action'] == 'RETRIEVE_RETURN':
+                response_dict, message = self.get_return(request_dict)
+                if response_dict != None:
+                    j = JsonResponse(data=response_dict)
+                    j["Access-Control-Allow-Origin"] = "*"
+                    return j
+
+            if request_dict['action'] == 'PROCESS_RETURN':
+                response_dict, message = self.process_return(request_dict)
+                if response_dict != None:
+                    j = JsonResponse(data=response_dict)
+                    j["Access-Control-Allow-Origin"] = "*"
+                    return j
+
             j = JsonResponse(data={'error': message}, status=400)
             j["Access-Control-Allow-Origin"] = "*"
             return j
@@ -60,23 +77,122 @@ class ReturnsPlugin(BasePlugin):
         return j
 
 
-    def save_return(self, request_dict):
+    def process_return(self, request_dict):
+        if 'returnsProcessKeyFF' not in request_dict:
+            return None, 'Authentication Failed'
+        if request_dict['returnsProcessKeyFF'] != 'av08er7vbo3ihjv5!@rblkjedfv0e8qr':
+            return None, 'Authentication Failed'
+        try:
+            for i in range(len(request_dict['process_lines'])):
+                l = return_models.ReturnLine.objects.get(id=request_dict['process_lines'][i]['id'])
+                l.accepted_quantity = l.accepted_quantity + request_dict['process_lines'][i]['quantity_accepted']
+                l.reject_quantity = l.reject_quantity + request_dict['process_lines'][i]['quantity_rejected']
+                l.exchange_quantity = l.exchange_quantity + request_dict['process_lines'][i]['quantity_exchange']
+                l.returned_to_stock_quantity = l.returned_to_stock_quantity + request_dict['process_lines'][i]['quantity_restock']
+                l.save()
+        except Exception as e:
+            return None, e
+        r = {
+            'return_info' : {
+                'order_number' : request_dict['orderNumber']
+            }
+        }
+        
+        return r, 'Successful'
 
+
+    def get_return(self, request_dict):
+        if 'returnsProcessKeyFF' not in request_dict:
+            return None, 'Authentication Failed'
+        if request_dict['returnsProcessKeyFF'] != 'av08er7vbo3ihjv5!@rblkjedfv0e8qr':
+            return None, 'Authentication Failed'
+        try:
+            onum = int(request_dict["code"].split('|', 1)[1])
+        except Exception:
+            return None, 'Invalid Code'
+        
+        if order_models.Order.objects.filter(pk=onum).exists():
+            order_i = order_models.Order.objects.get(pk=onum)
+        else:
+            return None, 'Invalid Order Number'
+
+        ffz = str(datetime.now(timezone.utc) - order_models.Fulfillment.objects.get(order_id=order_i.id).created).split(' ')
+        if len(ffz) == 3:
+            fulfillment_elapse = ffz[0]
+        else:
+            fulfillment_elapse = 0
+        cursor = connection.cursor()
+        cursor.execute('''SELECT * from account_address WHERE id = ''' + str(order_i.shipping_address_id))
+        user_info = dictfetchall(cursor)[0]
+        return_headers = return_models.ReturnHeader.objects.filter(order_id=order_i.id)
+        rh_id_list = []
+        for i in range(len(return_headers)):
+            rh_id_list.append(return_headers[i].id)
+        return_lines = return_models.ReturnLine.objects.filter(return_header_id__in=rh_id_list)
+        lines = []
+        for line in return_lines:
+            exchangeStyle = None
+            exchangeColor = None
+            exchangeSize = None
+            if line.return_type == 'exchange':
+                exchangeStyle = line.exchange_sku.split('_')[0]
+                exchangeColor = line.exchange_sku.split('_')[1]
+                exchangeSize = line.exchange_sku.split('_')[2]
+            style = line.return_sku.split('_')[0]
+            color = line.return_sku.split('_')[1]
+            size = line.return_sku.split('_')[2]
+            lines.append({
+                'id': line.id,
+                'rh_id': line.return_header_id,
+                'return_sku': line.return_sku,
+                'return_type': line.return_type,
+                'exchange_sku': line.exchange_sku, 
+                'quantity_returned': line.quantity_returned,
+                'quantity_accepted': line.accepted_quantity,
+                'quantity_rejected': line.reject_quantity,
+                'color': color,
+                'size': size,
+                'style': style,
+                'exchangeStyle': exchangeStyle,
+                'exchangeColor': exchangeColor,
+                'exchangeSize': exchangeSize
+            })
+
+        r = {
+                'return': {
+                    'user_info': {
+                        'name': str(user_info['first_name']) + ' ' + str(user_info['last_name']),
+                        'address': str(user_info['street_address_1']),
+                        'city': str(user_info['city']),
+                        'country_area': str(user_info['country_area']),
+                        'country': str(user_info['country']),
+                        'zipcode': str(user_info['postal_code']),
+                        'email': str(order_i.user_email),
+                        'phone': str(user_info['phone']),
+                    },
+                    'order_number': str(order_i.id),
+                    'fulfillment_elapse' : str(fulfillment_elapse),
+                    'lines': lines
+                }
+            }
+        return r, 'Successful'
+
+
+    def save_return(self, request_dict):
         comment = request_dict["additionalComments"]
         onum = int(request_dict["orderNumber"])
-        i = 1
-        order_i = None
-        order_l = order_models.Order.objects.all().order_by("created")
-        for o in order_l:
-            if onum == i:
-                order_i = o
-                break
-            i = i + 1
+
+        if order_models.Order.objects.filter(pk=onum).exists():
+            order_i = order_models.Order.objects.get(pk=onum)
+        else:
+            return None, 'Invalid Order Number'
 
         return_header = return_models.ReturnHeader.objects.create(
              order_id=onum,
              comment=comment
         )
+
+        ex_lines = []
 
         for i in range(len(request_dict["return_lines"])):
             if request_dict["return_lines"][i]["exchangeSku"] != None:
@@ -97,9 +213,20 @@ class ReturnsPlugin(BasePlugin):
                 return_sku = request_dict["return_lines"][i]["returnSku"]
             )
 
+            line_zz = order_models.OrderLine.objects.get(id=int(request_dict["return_lines"][i]["id"]))
+
+            if request_dict["return_lines"][i]["returnType"].lower() == 'exchange':
+                request_dict["return_lines"][i]["line_instance"] = return_line
+                request_dict["return_lines"][i]["order_line_instance"] = line_zz
+                ex_lines.append(request_dict["return_lines"][i])
+
         cursor = connection.cursor()
         cursor.execute('''SELECT * FROM account_address WHERE id = ''' + str(order_i.shipping_address_id))
         user_info = dictfetchall(cursor)[0]
+
+        # update meta to exhangeOrder=true
+
+        # generate order lines
 
         r.generate_report(
             order_number = str(order_i.id),
@@ -113,6 +240,45 @@ class ReturnsPlugin(BasePlugin):
             phone = str(user_info['phone'])
         )
 
+        if(len(ex_lines) > 0):
+            order_i.pk = None 
+            order_i.token = None
+            order_i.created = now()
+            order_i.status = 'unfulfilled'
+            
+
+            order_i.shipping_price_net_amount = order_i.shipping_price_net_amount - order_i.shipping_price_net_amount
+            order_i.shipping_price_net = order_i.shipping_price_net - order_i.shipping_price_net
+            order_i.shipping_price_gross_amount = order_i.shipping_price_gross_amount = order_i.shipping_price_gross_amount
+            order_i.shipping_price_gross = order_i.shipping_price_gross - order_i.shipping_price_gross
+            order_i.shipping_price = order_i.shipping_price - order_i.shipping_price
+            order_i.total_net_amount = order_i.total_net_amount - order_i.total_net_amount
+            order_i.total_net = order_i.total_net - order_i.total_net
+            order_i.total_gross_amount = order_i.total_gross_amount - order_i.total_gross_amount
+            order_i.total_gross = order_i.total_gross - order_i.total_gross
+            order_i.total = order_i.total - order_i.total
+
+            order_i.save()
+
+            for ex_line in ex_lines:
+                vz = p_models.ProductVariant.objects.get(id=exchange_variant_id)
+                o_line_instance = ex_line['order_line_instance']
+                lz = order_models.OrderLine.objects.create(
+                    order_id=order_i.id,
+                    variant=vz,
+                    product_name=vz.product.name,
+                    variant_name=vz.name,
+                    product_sku=vz.sku,
+                    is_shipping_required=True,
+                    quantity=ex_line["quantity"],
+                    unit_price_net_amount=o_line_instance.unit_price_net_amount,
+                    unit_price_net=o_line_instance.unit_price_net,
+                    unit_price_gross_amount=o_line_instance.unit_price_gross_amount,
+                    unit_price_gross=o_line_instance.unit_price_gross,
+                    unit_price=o_line_instance.unit_price,
+                    tax_rate=o_line_instance.tax_rate
+                )
+
         return FileResponse(open('/var/www/html/saleor/form.pdf', 'rb')), 'Successful'
 
 
@@ -124,20 +290,11 @@ class ReturnsPlugin(BasePlugin):
         except Exception:
             return None, 'Invalid Order Number'
 
-        # find the order by number
-        i = 1
-        order_i = None
-        order_l = order_models.Order.objects.all().order_by("created")
-        for o in order_l:
-            if onum == i:
-                order_i = o
-                break
-            i = i + 1
-
-        if order_i == None:
+        if order_models.Order.objects.filter(pk=onum).exists():
+            order_i = order_models.Order.objects.get(pk=onum)
+        else:
             return None, 'Invalid Order Number'
 
-        # check date window, currently set to 35 days, need to get delivered date from USPS/UPS
         t = pytz.UTC.localize(datetime.today())
         w = t - timedelta(days=35)
         d = order_i.created
@@ -148,7 +305,6 @@ class ReturnsPlugin(BasePlugin):
         b = order_i.billing_address.postal_code == request_dict['zip']
         if not (s or b):
             return None, 'Invalid Zip Code'
-
 
         if not (order_i.user_email.lower() == request_dict['email'].lower()):
             return None, 'Invalid Information'
@@ -169,8 +325,6 @@ class ReturnsPlugin(BasePlugin):
 
             for returned_line in returned_lines:
                 quantity_returned += returned_line.quantity_returned
-            print(quantity_returned)
-
 
             exchangeable_variant_attrs = []
             exchangable_variants = []
@@ -179,7 +333,10 @@ class ReturnsPlugin(BasePlugin):
             exchangeable_assignments_list = []
 
             for v in prod_variants:
-                s = warehouse_models.Stock.objects.filter(product_variant=v)[0]
+                qty = 0
+                if warehouse_models.Stock.objects.filter(product_variant=v).exists():
+                    s = warehouse_models.Stock.objects.filter(product_variant=v)[0]
+                    qty = s.quantity
 
                 cursor.execute('''SELECT * FROM product_assignedvariantattribute where variant_id =''' + str(v.id))
                 for c in dictfetchall(cursor):
@@ -191,9 +348,9 @@ class ReturnsPlugin(BasePlugin):
                     'name': v.name,
                     'price_amount': v.price_amount,
                     'currency': v.currency,
-                    'quantity_available': s.quantity
+                    'quantity_available': qty
                 })
-                sku_quantity_map[v.sku] = s.quantity
+                sku_quantity_map[v.sku] = qty
 
             for va in variant_attrs:
                 a_vals = p_models.AttributeValue.objects.filter(attribute=va.attribute)

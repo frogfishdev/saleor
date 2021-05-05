@@ -67,9 +67,29 @@ class ApplePayPlugin(BasePlugin):
         paymentOne = apicontractsv1.paymentType()
         paymentOne.opaqueData = opaquedata
 
+
+        # Set the customer's Bill To address
+        customer_address = apicontractsv1.customerAddressType()
+        customer_address.firstName = request.POST['firstName']
+        customer_address.lastName = request.POST['lastName']
+        customer_address.company = ""
+        customer_address.address = request.POST['address']
+        customer_address.city = request.POST['city']
+        customer_address.state = request.POST['state']
+        customer_address.zip = request.POST['zip']
+        customer_address.country = "US"
+        
+        # Set the customer's identifying information
+        customer_data = apicontractsv1.customerDataType()
+        customer_data.type = "individual"
+        customer_data.email = request.POST['email']
+
+
         transactionrequest = apicontractsv1.transactionRequestType()
         transactionrequest.transactionType = "authCaptureTransaction"
         transactionrequest.amount = Decimal(request.POST['amount'])
+        transactionrequest.billTo = customer_address
+        transactionrequest.customer = customer_data
         transactionrequest.payment = paymentOne
 
         retail = apicontractsv1.transRetailInfoType()
