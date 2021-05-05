@@ -70,7 +70,7 @@ def send_credit(process_lines):
             "qty_accepted" : str(line["quantity_accepted"]),
             "to_stock" : str(line["quantity_restock"]),
             "reason_name" : r_l.return_reason,
-            "reason_name_rejected" : "rejected reason",
+            "reason_name_rejected" : r_l.rejected_reason,
             "ammount" : str(o_l.unit_price_net_amount),
             "product_ammount" : str(o_l.unit_price_net_amount),
             "ticket" : None,
