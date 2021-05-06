@@ -209,6 +209,7 @@ if not SECRET_KEY and DEBUG:
     SECRET_KEY = get_random_secret_key()
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "saleor.core.middleware.request_time",
@@ -267,6 +268,8 @@ INSTALLED_APPS = [
     "django_filters",
     "phonenumber_field",
     "sslserver",
+    "corsheaders",
+    "saleor.returns"
 ]
 
 
@@ -524,7 +527,8 @@ PLUGINS = [
     "saleor.payment.gateways.adyen.plugin.AdyenGatewayPlugin",
     "saleor.plugins.invoicing.plugin.InvoicingPlugin",
     "saleor.payment.gateways.authorizenet.plugin.AuthorizeNetGatewayPlugin",
-    "saleor.plugins.applepay.plugin.ApplePayPlugin"
+    "saleor.plugins.applepay.plugin.ApplePayPlugin",
+    "saleor.plugins.returns.plugin.ReturnsPlugin"
 ]
 
 # Plugin discovery
@@ -589,6 +593,15 @@ JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
     seconds=parse(os.environ.get("JWT_TTL_REQUEST_EMAIL_CHANGE", "1 hour")),
 )
 
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = (
+        "http://localhost:3000",
+        "https://testdash.frogfishsolutions.com",
+        "https://dominiqueapparel.com",
+        "https://returnsdominique.frogfishsolutions.com"
+)
+
 
 AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID", "979FeLuLX")
 AUTHORIZENET_TRANSACTION_KEY = os.environ.get("AUTHORIZENET_TRANSACTION_KEY", "42993v965XRbwtKx")
@@ -600,4 +613,4 @@ APPLE_PAY_DOMAIN = os.environ.get("APPLE_PAY_DOMAIN", "")
 APPLE_PAY_DISPLAY_NAME = os.environ.get("APPLE_PAY_DISPLAY_NAME", "")
 
 FROGFISH_API_TOKEN = os.environ.get("FROGFISH_API_TOKEN", "c204c31a-1868-45c0-b4c0-fbed3deefad3")
-FROGFISH_API_URL = os.environ.get("FROGFISH_API_URL", "http://localhost:8080/FrogfishAPI/RMASaleor_Post")
+FROGFISH_API_URL = os.environ.get("FROGFISH_API_URL", "http://104.130.209.55:8080/dayleennew/RMASaleor_Post")
