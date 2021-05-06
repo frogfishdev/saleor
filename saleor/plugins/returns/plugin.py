@@ -1,4 +1,4 @@
-from credit import send_credit
+from .credit import send_credit
 import io
 import os
 import json
@@ -97,7 +97,7 @@ class ReturnsPlugin(BasePlugin):
                 'order_number' : request_dict['orderNumber']
             }
         }
-        
+        send_credit(request_dict['process_lines'])
         return r, 'Successful'
 
 
