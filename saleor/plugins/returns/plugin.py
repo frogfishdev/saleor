@@ -1,4 +1,3 @@
-from credit import send_credit
 import io
 import os
 import json
@@ -21,7 +20,7 @@ from saleor.order import models as order_models
 from saleor.product import models as p_models
 from saleor.warehouse import models as warehouse_models
 
-from . import report as r
+from . import report as re
 
 import pytz
 from datetime import datetime, timedelta
@@ -45,6 +44,13 @@ class ReturnsPlugin(BasePlugin):
                 if response_dict != None:
                     j = JsonResponse(data=response_dict)
                     j["Access-Control-Allow-Origin"] = "*"
+                    return j
+            
+            if request_dict['action'] == 'RETRIEVE_ORDER_FORM':
+                response_file, message = self.get_form(request_dict)
+                if response_file != None:
+                    j = response_file
+                    j["Access-Contol-Allow-Origin"] = "*"
                     return j
 
             if request_dict['action'] == 'SUBMIT_RETURN':
@@ -76,6 +82,28 @@ class ReturnsPlugin(BasePlugin):
         j["Access-Control-Allow-Origin"] = "*"
         return j
 
+    def get_form(self, request_dict):
+        onum = int(request_dict["orderNumber"])
+        if order_models.Order.objects.filter(pk=onum).exists():
+            order_i = order_models.Order.objects.get(pk=onum)
+        else:
+            return None, 'Invalid Order Number'
+        cursor = connection.cursor()
+        cursor.execute('''SELECT * FROM account_address WHERE id = ''' + str(order_i.shipping_address_id))
+        user_info = dictfetchall(cursor)[0]
+        re.generate_report(
+            order_number = str(order_i.id),
+            name = str(user_info['first_name']) + ' ' + str(user_info['last_name']),
+            address = str(user_info['street_address_1']),
+            city = str(user_info['city']),
+            country_area = str(user_info['country_area']),
+            country = str(user_info['country']),
+            zipcode = str(user_info['postal_code']),
+            email = str(order_i.user_email),
+            phone = str(user_info['phone'])
+        )
+        return FileResponse(open('/var/www/html/saleor/form.pdf', 'rb')), 'Successful'
+
 
     def process_return(self, request_dict):
         if 'returnsProcessKeyFF' not in request_dict:
@@ -89,6 +117,7 @@ class ReturnsPlugin(BasePlugin):
                 l.reject_quantity = l.reject_quantity + request_dict['process_lines'][i]['quantity_rejected']
                 l.exchange_quantity = l.exchange_quantity + request_dict['process_lines'][i]['quantity_exchange']
                 l.returned_to_stock_quantity = l.returned_to_stock_quantity + request_dict['process_lines'][i]['quantity_restock']
+                l.rejected_reason = request_dict['process_lines'][i]['reject_reason']
                 l.save()
         except Exception as e:
             return None, e
@@ -97,7 +126,6 @@ class ReturnsPlugin(BasePlugin):
                 'order_number' : request_dict['orderNumber']
             }
         }
-        
         return r, 'Successful'
 
 
@@ -228,7 +256,7 @@ class ReturnsPlugin(BasePlugin):
 
         # generate order lines
 
-        r.generate_report(
+        re.generate_report(
             order_number = str(order_i.id),
             name = str(user_info['first_name']) + ' ' + str(user_info['last_name']),
             address = str(user_info['street_address_1']),
@@ -434,4 +462,5 @@ class ReturnsPlugin(BasePlugin):
                 'lines': lines
             }
         }
+
         return r, 'Successful'
