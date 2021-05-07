@@ -308,6 +308,10 @@ class Product(SeoModel, ModelWithMetadata, PublishableModel):
         images = list(self.images.all())
         return images[0] if images else None
 
+    def get_first_color_image(self, color) -> "ProductImage":
+        images = list(self.images.filter(image__icontains=color))
+        return images[0] if images else None
+
     @staticmethod
     def sort_by_attribute_fields() -> list:
         return ["concatenated_values_order", "concatenated_values", "name"]
@@ -466,6 +470,10 @@ class ProductVariant(SortableModel, ModelWithMetadata):
     def get_first_image(self) -> "ProductImage":
         images = list(self.images.all())
         return images[0] if images else self.product.get_first_image()
+
+    def get_first_color_image(self, color) -> "ProductImage":
+        images = list(self.images.filter(image__icontains=color))
+        return images[0] if images else self.product.get_first_color_image(color)
 
     def get_ordering_queryset(self):
         return self.product.variants.all()

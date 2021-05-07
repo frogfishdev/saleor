@@ -232,7 +232,6 @@ class ReturnsPlugin(BasePlugin):
             else:
                 exchange_variant_id = None
 
-
             return_line = return_models.ReturnLine.objects.create(
                 return_header_id = int(return_header.id),
                 return_variant_id = int(request_dict["return_lines"][i]["returnVariantId"]),
@@ -293,6 +292,7 @@ class ReturnsPlugin(BasePlugin):
             order_i.save()
 
             for ex_line in ex_lines:
+                exchange_variant_id = p_models.ProductVariant.objects.get(sku=ex_line["exchangeSku"]).id
                 vz = p_models.ProductVariant.objects.get(id=exchange_variant_id)
                 o_line_instance = ex_line['order_line_instance']
                 lz = order_models.OrderLine.objects.create(
@@ -346,7 +346,11 @@ class ReturnsPlugin(BasePlugin):
         for line in order_lines:
             color = line.product_sku.split('_')[1]
             size = line.product_sku.split('_')[2]
-            image = 'https://' + settings.AWS_MEDIA_BUCKET_NAME + '.s3.amazonaws.com/' + str(line.variant.get_first_image().image)
+            image_q = line.variant.images.filter(image__icontains=color)
+            print(color)
+            print(line.variant.get_first_color_image(color).image)
+            
+            image = 'https://' + settings.AWS_MEDIA_BUCKET_NAME + '.s3.amazonaws.com/' + str(line.variant.get_first_color_image(color).image)
 
             prod = p_models.Product.objects.get(id=line.variant.product.id)
             prod_variants = p_models.ProductVariant.objects.filter(product=prod)

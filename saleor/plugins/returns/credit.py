@@ -75,7 +75,8 @@ def send_credit(process_lines):
             "product_ammount" : str(o_l.unit_price_net_amount),
             "ticket" : None,
             "taxes" : [],
-            "discounts" : []
+            "discounts" : [],
+            "return_type": line["return_type"]
         }
         item_list.append(line_obj)
 
