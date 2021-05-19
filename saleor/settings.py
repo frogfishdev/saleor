@@ -269,7 +269,6 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "sslserver",
     "corsheaders",
-    "saleor.returns"
 ]
 
 
