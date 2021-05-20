@@ -267,7 +267,7 @@ INSTALLED_APPS = [
     "django_filters",
     "phonenumber_field",
     "sslserver",
-    "corsheaders"
+    "corsheaders",
 ]
 
 
