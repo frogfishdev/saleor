@@ -84,6 +84,10 @@ def transaction_for_customer(
 ):
     if 'applepay' in payment_information.token:
         return None, None
+
+    if 'paypalexpress' in payment_information.token:
+        return None, None
+
     merchant_auth = apicontractsv1.merchantAuthenticationType()
     merchant_auth.name = settings.AUTHORIZENET_API_LOGIN_ID
     merchant_auth.transactionKey = settings.AUTHORIZENET_TRANSACTION_KEY
@@ -315,6 +319,7 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
                 print ('Transaction Response Code: %s' % response.transactionResponse.responseCode)
                 print ('Message Code: %s' % response.transactionResponse.messages.message[0].code)
                 print ('Description: %s' % response.transactionResponse.messages.message[0].description)
+                t_id = str(response.transactionResponse.transId)
             else:
                 print ('Failed Transaction.')
                 if hasattr(response.transactionResponse, 'errors'):

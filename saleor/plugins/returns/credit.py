@@ -76,7 +76,7 @@ def send_credit(process_lines):
             "ticket" : None,
             "taxes" : [],
             "discounts" : [],
-            "return_type": line["return_type"]
+            "return_type": str(line["return_type"])
         }
         item_list.append(line_obj)
 
@@ -138,7 +138,7 @@ def send_credit(process_lines):
 
     ff_cli = FrogfishClient(settings.FROGFISH_API_TOKEN)
 
-    # ff_cli.credits.create(credits=rma_send)
+    ff_cli.credits.create(credits=rma_send)
 
 
 

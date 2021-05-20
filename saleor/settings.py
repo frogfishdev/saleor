@@ -31,7 +31,7 @@ def get_bool_from_env(name, default_value):
     return default_value
 
 
-DEBUG = True
+DEBUG = get_bool_from_env("DEBUG", True)
 
 SITE_ID = 1
 
@@ -63,7 +63,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://saleor:saleor@97.107.132.33:5432/saleor", conn_max_age=600
+        default=os.environ.get('PG_DATABASE_URL'), conn_max_age=600
     )
 }
 
@@ -136,8 +136,7 @@ if not EMAIL_URL and SENDGRID_USERNAME and SENDGRID_PASSWORD:
         SENDGRID_USERNAME,
         SENDGRID_PASSWORD,
     )
-if not EMAIL_URL:
-    EMAIL_URL = 'smtp://tempuser@gmail.com:temppass@smtp.gmail.com:465/?ssl=True'
+
 email_config = dj_email_url.parse(
     EMAIL_URL
 )
@@ -268,8 +267,7 @@ INSTALLED_APPS = [
     "django_filters",
     "phonenumber_field",
     "sslserver",
-    "corsheaders",
-    "saleor.returns"
+    "corsheaders"
 ]
 
 
@@ -398,7 +396,7 @@ TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
-ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.7.190"))
+ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1"))
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -603,14 +601,14 @@ CORS_ALLOWED_ORIGINS = (
 )
 
 
-AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID", "979FeLuLX")
-AUTHORIZENET_TRANSACTION_KEY = os.environ.get("AUTHORIZENET_TRANSACTION_KEY", "42993v965XRbwtKx")
-AUTHORIZENET_ENVIRONMENT = os.environ.get("AUTHORIZENET_ENVIRONMENT", "https://apitest.authorize.net/xml/v1/request.api")
+AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID")
+AUTHORIZENET_TRANSACTION_KEY = os.environ.get("AUTHORIZENET_TRANSACTION_KEY")
+AUTHORIZENET_ENVIRONMENT = os.environ.get("AUTHORIZENET_ENVIRONMENT")
 
 
-APPLE_PAY_MERCHANT_ID = os.environ.get("APPLE_PAY_MERCHANT_ID", "")
-APPLE_PAY_DOMAIN = os.environ.get("APPLE_PAY_DOMAIN", "")
-APPLE_PAY_DISPLAY_NAME = os.environ.get("APPLE_PAY_DISPLAY_NAME", "")
+APPLE_PAY_MERCHANT_ID = os.environ.get("APPLE_PAY_MERCHANT_ID")
+APPLE_PAY_DOMAIN = os.environ.get("APPLE_PAY_DOMAIN")
+APPLE_PAY_DISPLAY_NAME = os.environ.get("APPLE_PAY_DISPLAY_NAME")
 
-FROGFISH_API_TOKEN = os.environ.get("FROGFISH_API_TOKEN", "c204c31a-1868-45c0-b4c0-fbed3deefad3")
-FROGFISH_API_URL = os.environ.get("FROGFISH_API_URL", "http://104.130.209.55:8080/dayleennew/RMASaleor_Post")
+FROGFISH_API_TOKEN = os.environ.get("FROGFISH_API_TOKEN")
+FROGFISH_API_URL = os.environ.get("FROGFISH_API_URL")
