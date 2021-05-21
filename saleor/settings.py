@@ -21,6 +21,8 @@ def get_list(text):
     return [item.strip() for item in text.split(",")]
 
 def get_tuple(text):
+    if text is None:
+        return None
     return tuple(item.strip() for item in text.split(","))
 
 
