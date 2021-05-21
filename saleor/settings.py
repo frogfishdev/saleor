@@ -20,6 +20,9 @@ from sentry_sdk.integrations.django import DjangoIntegration
 def get_list(text):
     return [item.strip() for item in text.split(",")]
 
+def get_tuple(text):
+    return tuple(item.strip() for item in text.split(","))
+
 
 def get_bool_from_env(name, default_value):
     if name in os.environ:
@@ -593,12 +596,7 @@ JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = (
-        "http://localhost:3000",
-        "https://testdash.frogfishsolutions.com",
-        "https://dominiqueapparel.com",
-        "https://returnsdominique.frogfishsolutions.com"
-)
+CORS_ALLOWED_ORIGINS = get_tuple(os.environ.get("CORS_ALLOWED_ORIGINS"))
 
 
 AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID")
