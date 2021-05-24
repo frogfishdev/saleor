@@ -112,6 +112,7 @@ pytz==2020.1; python_version >= "3.6" and python_full_version < "3.0.0" or pytho
 pyyaml==5.3.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 razorpay==1.2.0
 redis==3.5.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_version >= "3.6" and python_full_version >= "3.5.0"
+reportlab==3.5.66
 requests==2.24.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 rsa==4.6; python_version >= "3.5" and python_version < "4" and (python_version >= "3.5" and python_full_version < "3.0.0" or python_version >= "3.5" and python_full_version >= "3.4.0")
 rx==1.6.1
