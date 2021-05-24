@@ -68,7 +68,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ.get('PG_DATABASE_URL'), conn_max_age=600
+        default=(os.environ.get('PG_DATABASE_URL') if os.environ.get('PG_DATABASE_URL') else "postgres://saleor:saleor@localhost:5432/saleor"), conn_max_age=600
     )
 }
 
@@ -600,7 +600,10 @@ JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = get_tuple(os.environ.get("CORS_ALLOWED_ORIGINS"))
+if os.environ.get("CORS_ALLOWED_ORIGINS"):
+    CORS_ALLOWED_ORIGINS = get_tuple(os.environ.get("CORS_ALLOWED_ORIGINS"))
+else:
+    CORS_ALLOWED_ORIGINS = ("http://localhost:3000")
 
 
 AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID")
