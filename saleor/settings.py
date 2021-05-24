@@ -603,7 +603,10 @@ CORS_ALLOW_CREDENTIALS = True
 if os.environ.get("CORS_ALLOWED_ORIGINS"):
     CORS_ALLOWED_ORIGINS = get_tuple(os.environ.get("CORS_ALLOWED_ORIGINS"))
 else:
-    CORS_ALLOWED_ORIGINS = ("http://localhost:3000")
+    CORS_ALLOWED_ORIGINS = (
+        "http://localhost:3000",
+        "https://localhost:3000"
+    )
 
 
 AUTHORIZENET_API_LOGIN_ID = os.environ.get("AUTHORIZENET_API_LOGIN_ID")
