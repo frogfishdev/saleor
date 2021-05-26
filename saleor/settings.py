@@ -533,7 +533,8 @@ PLUGINS = [
     "saleor.plugins.invoicing.plugin.InvoicingPlugin",
     "saleor.payment.gateways.authorizenet.plugin.AuthorizeNetGatewayPlugin",
     "saleor.plugins.applepay.plugin.ApplePayPlugin",
-    "saleor.plugins.returns.plugin.ReturnsPlugin"
+    "saleor.plugins.returns.plugin.ReturnsPlugin",
+    "saleor.plugins.paypalexpress.plugin.PaypalExpressPlugin"
 ]
 
 # Plugin discovery
