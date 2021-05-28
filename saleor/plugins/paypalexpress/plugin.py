@@ -44,7 +44,7 @@ class PaypalExpressPlugin(BasePlugin):
         payment.payPal = paypal
 
         transactionrequest = apicontractsv1.transactionRequestType()
-        transactionrequest.amount = Decimal(0.8)
+        transactionrequest.amount = '0.80'
         transactionrequest.transactionType = apicontractsv1.transactionTypeEnum.authOnlyTransaction
         transactionrequest.payment = payment
 
@@ -54,6 +54,7 @@ class PaypalExpressPlugin(BasePlugin):
         request.transactionRequest = transactionrequest
 
         controller = createTransactionController(request)
+        controller.setenvironment(settings.AUTHORIZENET_ENVIRONMENT)
         controller.execute()
 
         response = controller.getresponse()
