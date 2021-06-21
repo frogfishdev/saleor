@@ -194,7 +194,8 @@ class ReturnsPlugin(BasePlugin):
                 'style': style,
                 'exchangeStyle': exchangeStyle,
                 'exchangeColor': exchangeColor,
-                'exchangeSize': exchangeSize
+                'exchangeSize': exchangeSize,
+                'return_reason': line.return_reason
             })
 
         r = {
@@ -324,6 +325,7 @@ order by rh.date_submitted asc;
         if(len(ex_lines) > 0):
             order_i.metadata['exchangeOrder'] = 'true'
             order_i.metadata['exchangeOrderId'] = str(order_i.id)
+            order_i.metadata['processedToFrogfish'] = 'false'
             order_i.pk = None 
             order_i.token = None
             order_i.created = now()

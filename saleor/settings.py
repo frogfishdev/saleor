@@ -262,6 +262,7 @@ INSTALLED_APPS = [
     "saleor.wishlist",
     "saleor.app",
     "saleor.returns",
+    "saleor.maillist",
     # External apps
     "versatileimagefield",
     "django_measurement",
@@ -534,7 +535,8 @@ PLUGINS = [
     "saleor.payment.gateways.authorizenet.plugin.AuthorizeNetGatewayPlugin",
     "saleor.plugins.applepay.plugin.ApplePayPlugin",
     "saleor.plugins.returns.plugin.ReturnsPlugin",
-    "saleor.plugins.paypalexpress.plugin.PaypalExpressPlugin"
+    "saleor.plugins.paypalexpress.plugin.PaypalExpressPlugin",
+    "saleor.plugins.maillist.plugin.MailListPlugin"
 ]
 
 # Plugin discovery
