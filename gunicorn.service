@@ -6,7 +6,7 @@ After=network.target
 User=root
 Group=www-data
 WorkingDirectory=/var/www/html/saleor
-ExecStart=/root/saleorenv/saleor/bin/gunicorn --access-logfile - --workers 3 --bind unix:/var/www/html/saleor/saleor.sock saleor.wsgi:application
+ExecStart=/root/venv/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/var/www/html/saleor/saleor.sock saleor.wsgi:application
 EnvironmentFile=/etc/systemd/system/envvars.conf
 
 [Install]

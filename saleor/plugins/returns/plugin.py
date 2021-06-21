@@ -225,21 +225,21 @@ class ReturnsPlugin(BasePlugin):
             return None, 'Authentication Failed'
 
         qry = '''
-select oh.id as "Order Number",
-	concat(aa.first_name, ' ', aa.last_name) as "ShipTo Name",
-	date(rh.date_submitted) as "Date Submitted",
-	oh.user_email as "Email",
-	rh."comment" as "Comment",
-	string_agg(rl.return_type, ' ') as "Return/Exchange Type",
-	sum(rl.quantity_returned) as "Return Qty",
-	sum(rl.exchange_quantity) as "Exchange Qty"
-from returns_returnline rl
-	left outer join returns_returnheader rh on rh.id = rl.return_header_id
-	left outer join order_order oh on oh.id = rh.order_id
-	left outer join account_address aa on aa.id = oh.shipping_address_id
-where ((rl.quantity_returned + rl.exchange_quantity) - (rl.accepted_quantity + rl.reject_quantity)) > 0
-group by oh.id, rh."comment", rh.date_submitted, aa.first_name, aa.last_name
-order by rh.date_submitted asc;
+                select oh.id as "Order Number",
+                concat(aa.first_name, ' ', aa.last_name) as "ShipTo Name",
+                date(rh.date_submitted) as "Date Submitted",
+                oh.user_email as "Email",
+                rh."comment" as "Comment",
+                string_agg(rl.return_type, ' '),
+                sum(rl.quantity_returned) as "Return Qty",
+                sum(rl.exchange_quantity) as "Exchange Qty"
+            from returns_returnline rl
+                left outer join returns_returnheader rh on rh.id = rl.return_header_id
+                left outer join order_order oh on oh.id = rh.order_id
+                left outer join account_address aa on aa.id = oh.shipping_address_id
+            where (rl.quantity_returned - (rl.accepted_quantity + rl.reject_quantity)) > 0
+            group by oh.id, rh."comment", rh.date_submitted, aa.first_name, aa.last_name
+            order by rh.date_submitted asc;
         '''
 
         cursor = connection.cursor()
