@@ -8,7 +8,10 @@ from django.core.handlers.wsgi import WSGIRequest
 
 from ..base_plugin import BasePlugin
 
+from templated_email import send_templated_mail
+
 from saleor.maillist import models as maillist_models
+from saleor.maillist import emails
 
 class MailListPlugin(BasePlugin):
     PLUGIN_ID = "mirumee.maillist"
@@ -44,6 +47,8 @@ class MailListPlugin(BasePlugin):
         maillist_models.MailListParticipant.objects.create(
             email = email
         )
+
+        emails.send_promotion(email, '6PBYHWSHIP')
 
         ret['message'] = 'Thank you please check your email for a free shipping code'
 
