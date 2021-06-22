@@ -1,0 +1,20 @@
+{% load i18n %}
+
+{% block subject %}
+  {% blocktrans trimmed context "Promotion e-mail subject" %}
+    Free shipping code
+  {% endblocktrans %}
+{% endblock %}
+
+{% block plain %}
+{% include 'templated_email/shared/_header.email' %}
+{% blocktrans context "Promotion e-mail text" %}
+Hello {{ recipient_email }}, {{ discount_code }} is your free shipping code.
+{% endblocktrans %}
+
+{% include 'templated_email/shared/_footer.email' %}
+{% endblock %}
+
+{% block html %}
+{% include 'templated_email/compiled/order_refund.html' %}
+{% endblock %}
