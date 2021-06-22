@@ -16,5 +16,5 @@ Hello {{ recipient_email }}, {{ discount_code }} is your free shipping code.
 {% endblock %}
 
 {% block html %}
-{% include 'templated_email/compiled/order_refund.html' %}
+{% include 'templated_email/compiled/send_promotion.html' %}
 {% endblock %}
