@@ -11,6 +11,8 @@ from ..seo.schema.email import get_order_confirmation_markup
 from . import events
 from .models import Fulfillment, Order
 
+from .. import settings
+
 if TYPE_CHECKING:
     from decimal import Decimal
 
@@ -53,6 +55,8 @@ def collect_data_for_email(
         prepare_order_details_url(order, redirect_url) if redirect_url else ""
     )
     email_context["order"] = order
+
+    email_context["support_email"] = settings.SUPPORT_EMAIL
 
     # Order confirmation template requires additional information
     if template in [CONFIRM_ORDER_TEMPLATE, STAFF_CONFIRM_ORDER_TEMPLATE]:

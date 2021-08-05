@@ -46,7 +46,7 @@ class ReturnsPlugin(BasePlugin):
                     j = JsonResponse(data=response_dict)
                     j["Access-Control-Allow-Origin"] = "*"
                     return j
-            
+
             if request_dict['action'] == 'RETRIEVE_ORDER_FORM':
                 response_file, message = self.get_form(request_dict)
                 if response_file != None:
@@ -134,7 +134,7 @@ class ReturnsPlugin(BasePlugin):
                 'order_number' : request_dict['orderNumber']
             }
         }
-        
+
         send_credit(request_dict['process_lines'])
 
         return r, 'Successful'
@@ -149,7 +149,7 @@ class ReturnsPlugin(BasePlugin):
             onum = int(request_dict["code"].split('|', 1)[1])
         except Exception:
             return None, 'Invalid Code'
-        
+
         if order_models.Order.objects.filter(pk=onum).exists():
             order_i = order_models.Order.objects.get(pk=onum)
         else:
@@ -185,7 +185,7 @@ class ReturnsPlugin(BasePlugin):
                 'rh_id': line.return_header_id,
                 'return_sku': line.return_sku,
                 'return_type': line.return_type,
-                'exchange_sku': line.exchange_sku, 
+                'exchange_sku': line.exchange_sku,
                 'quantity_returned': line.quantity_returned,
                 'quantity_accepted': line.accepted_quantity,
                 'quantity_rejected': line.reject_quantity,
@@ -225,21 +225,21 @@ class ReturnsPlugin(BasePlugin):
             return None, 'Authentication Failed'
 
         qry = '''
-                select oh.id as "Order Number",
-                concat(aa.first_name, ' ', aa.last_name) as "ShipTo Name",
-                date(rh.date_submitted) as "Date Submitted",
-                oh.user_email as "Email",
-                rh."comment" as "Comment",
-                string_agg(rl.return_type, ' '),
-                sum(rl.quantity_returned) as "Return Qty",
-                sum(rl.exchange_quantity) as "Exchange Qty"
-            from returns_returnline rl
-                left outer join returns_returnheader rh on rh.id = rl.return_header_id
-                left outer join order_order oh on oh.id = rh.order_id
-                left outer join account_address aa on aa.id = oh.shipping_address_id
-            where (rl.quantity_returned - (rl.accepted_quantity + rl.reject_quantity)) > 0
-            group by oh.id, rh."comment", rh.date_submitted, aa.first_name, aa.last_name
-            order by rh.date_submitted asc;
+select oh.id as "Order Number",
+        concat(aa.first_name, ' ', aa.last_name) as "ShipTo Name",
+        date(rh.date_submitted) as "Date Submitted",
+        oh.user_email as "Email",
+        rh."comment" as "Comment",
+        string_agg(rl.return_type, ' ') as "Return/Exchange Type",
+        sum(rl.quantity_returned) as "Return Qty",
+        sum(rl.exchange_quantity) as "Exchange Qty"
+from returns_returnline rl
+        left outer join returns_returnheader rh on rh.id = rl.return_header_id
+        left outer join order_order oh on oh.id = rh.order_id
+        left outer join account_address aa on aa.id = oh.shipping_address_id
+where (rl.quantity_returned - (rl.accepted_quantity + rl.reject_quantity)) > 0
+group by oh.id, rh."comment", rh.date_submitted, aa.first_name, aa.last_name
+order by rh.date_submitted asc;
         '''
 
         cursor = connection.cursor()
@@ -326,7 +326,7 @@ class ReturnsPlugin(BasePlugin):
             order_i.metadata['exchangeOrder'] = 'true'
             order_i.metadata['exchangeOrderId'] = str(order_i.id)
             order_i.metadata['processedToFrogfish'] = 'false'
-            order_i.pk = None 
+            order_i.pk = None
             order_i.token = None
             order_i.created = now()
             order_i.status = 'unfulfilled'
@@ -402,7 +402,7 @@ class ReturnsPlugin(BasePlugin):
             image_q = line.variant.images.filter(image__icontains=color)
             print(color)
             print(line.variant.get_first_color_image(color).image)
-            
+
             image = 'https://' + settings.AWS_MEDIA_BUCKET_NAME + '.s3.amazonaws.com/' + str(line.variant.get_first_color_image(color).image)
 
             prod = p_models.Product.objects.get(id=line.variant.product.id)
@@ -497,14 +497,14 @@ class ReturnsPlugin(BasePlugin):
                 'product_name': line.product_name,
                 'variant_name': line.variant_name,
                 'product_sku': line.product_sku,
-                'is_shipping_required': line.is_shipping_required, 
-                'quantity': line.quantity, 
-                'quantity_fulfilled': line.quantity_fulfilled, 
-                'quantity_returned': quantity_returned, 
-                'currency': line.currency, 
-                'unit_price_net_amount': line.unit_price_net_amount, 
-                'unit_price_gross_amount': line.unit_price_gross_amount, 
-                'tax_rate': line.tax_rate, 
+                'is_shipping_required': line.is_shipping_required,
+                'quantity': line.quantity,
+                'quantity_fulfilled': line.quantity_fulfilled,
+                'quantity_returned': quantity_returned,
+                'currency': line.currency,
+                'unit_price_net_amount': line.unit_price_net_amount,
+                'unit_price_gross_amount': line.unit_price_gross_amount,
+                'tax_rate': line.tax_rate,
                 'color': color,
                 'size': size,
                 'img': image,
@@ -513,8 +513,8 @@ class ReturnsPlugin(BasePlugin):
 
         r = {
             'order': {
-                'id': order_i.id, 
-                'email': order_i.user_email, 
+                'id': order_i.id,
+                'email': order_i.user_email,
                 'date': str(order_i.created),
                 'total_net_amount': order_i.total_net_amount,
                 'total_gross_amount': order_i.total_gross_amount,

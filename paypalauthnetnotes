@@ -1,0 +1,38 @@
+
+- payment gateways, paypal, paypal express, google pay
+    - deploy 
+      - create dayleen business paypal account and sandbox 
+      - add shipping methods to account 
+      - deploy backend paypal to dayleen saleor
+      - config and deploy storefront
+      - make sure refunds work for paypal
+      - no response from window error
+
+We just record the payment that PayPal processed on this account. 
+PayPal would be the ones connecting the payment to the payment ID 
+on their end.
+
+Kristine | 5/21/2021, 11:32:13 AM
+They assign the payment ID and once an approval is sent back to paypal 
+then the information gets sent through to us as to weather or not 
+that transaction was approved or declined so by then PayPal 
+would have assigned that payment to where it should belong.
+
+So, am I correct in assuming, that if i complete the whole paypal 
+payment flow on my front end and receive back a payer and payment id, 
+meaning card was actually charged, and then i go back to authorize.net 
+and submit a paypal transaction with just the payer id as the documentation 
+shows, then I have the correct flow?
+
+Kristine | 5/21/2021, 11:36:34 AM
+OK that part is a little above what I know about the process. 
+The charge should be already done when the payment is submitted 
+through paypal. You should not be having to go back to this 
+account to submit anything.
+
+Kristine | 5/21/2021, 11:37:00 AM
+You will just see the already completed transaction. Not sure if that 
+answers what you just asked.
+
+PayPal still processes the charge request and then sends the information
+ to us with the approval or decline information once that is done.
