@@ -121,7 +121,8 @@ def send_fulfillment_confirmation(order_pk, fulfillment_pk):
     email_data = collect_data_for_fulfillment_email(
         order_pk, CONFIRM_FULFILLMENT_TEMPLATE, fulfillment_pk
     )
-    send_templated_mail(**email_data)
+    if not settings.DISABLE_INITIAL_FULFILLMENT_EMAIL:
+        send_templated_mail(**email_data)
 
 
 def send_fulfillment_confirmation_to_customer(order, fulfillment, user):
@@ -151,7 +152,8 @@ def send_fulfillment_update(order_pk, fulfillment_pk):
 def send_payment_confirmation(order_pk):
     """Send the payment confirmation email."""
     email_data = collect_data_for_email(order_pk, CONFIRM_PAYMENT_TEMPLATE)
-    send_templated_mail(**email_data)
+    if not settings.DISABLE_PAYMENT_EMAIL:
+        send_templated_mail(**email_data)
 
 
 def send_order_canceled_confirmation(order: "Order", user: Optional["User"]):
