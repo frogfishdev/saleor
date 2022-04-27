@@ -1,4 +1,3 @@
-
 from decimal import *
 
 from django.conf import settings
@@ -20,6 +19,18 @@ class MailListPlugin(BasePlugin):
     PLUGIN_DESCRIPTION = "Mail list signup endpoint"
     def webhook(self, request: WSGIRequest, path: str, previous_value) -> HttpResponse:
         if path == '/webhook':
+            if request.POST['action'] == 'ACTIVATE' or request.POST['action'] == 'DEACTIVATE':
+                response_dict = self.handle_activation(request)
+                if response_dict != None:
+                    j = JsonResponse(data=response_dict)
+                    j["Access-Control-Allow-Origin"] = "*"
+                    return j
+            if request.POST['action'] == 'CHECKACTIVE':
+                response_dict = self.check_active(request)
+                if response_dict != None:
+                    j = JsonResponse(data=response_dict)
+                    j["Access-Control-Allow-Origin"] = "*"
+                    return j
             if request.POST['action'] == 'SAVEEMAIL':
                 response_dict, error = self.save_email(request)
                 if response_dict != None:
@@ -29,27 +40,49 @@ class MailListPlugin(BasePlugin):
 
                 j = JsonResponse(data={'error': error}, status=400)
                 j["Access-Control-Allow-Origin"] = "*"
-                return j            
-                
+                return j
+
         return HttpResponseNotFound()
 
-
+    def check_active(self, request):
+        email = request.POST['email']
+        ret = {}
+        query = maillist_models.MailListParticipant.objects.filter(email=email)
+        active_status = query[0].active
+        ret['active'] = active_status
+        return ret
 
     def save_email(self, request):
-        
+
         error = None
         ret = {}
         email = request.POST['email']
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        state = request.POST['state']
 
         if maillist_models.MailListParticipant.objects.filter(email=email):
             return None, "Email already in mailing list"
 
         maillist_models.MailListParticipant.objects.create(
-            email = email
+            email = email,
+            first_name = first_name,
+            last_name = last_name,
+            state = state,
+            active = True
         )
 
-        emails.send_promotion(email, '6PBYHWSHIP')
+        # emails.send_promotion(email, '6PBYHWSHIP')
 
-        ret['message'] = 'Thank you please check your email for a free shipping code'
+        ret['message'] = 'Success! You have signed up to receive promotional emails from City Distilling'
 
         return ret, error
+
+    def handle_activation(self, request):
+        action_type = request.POST['action']
+        email = request.POST['email']
+        if maillist_models.MailListParticipant.objects.filter(email=email):
+            maillist_models.MailListParticipant.objects.filter(email=email).update(
+                    active = False if action_type == "DEACTIVATE" else True
+                )
+        return self.check_active(request)
