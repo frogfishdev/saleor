@@ -203,7 +203,7 @@ class VatlayerPlugin(BasePlugin):
         return get_taxed_shipping_price(prices, taxes)
 
     def apply_taxes_to_shipping(
-        self, price: Money, shipping_address: "Address", previous_value: TaxedMoney
+        self, price: Money, shipping_address: "Address", root: "Any", previous_value: TaxedMoney
     ) -> TaxedMoney:
         if self._skip_plugin(previous_value):
             return previous_value

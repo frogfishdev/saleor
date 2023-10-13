@@ -211,14 +211,14 @@ class PluginsManager(PaymentInterface):
         )
 
     def apply_taxes_to_shipping(
-        self, price: Money, shipping_address: "Address"
+        self, price: Money, shipping_address: "Address", root: Any
     ) -> TaxedMoney:
         default_value = quantize_price(
             TaxedMoney(net=price, gross=price), price.currency
         )
         return quantize_price(
             self.__run_method_on_plugins(
-                "apply_taxes_to_shipping", default_value, price, shipping_address
+                "apply_taxes_to_shipping", default_value, price, shipping_address, root
             ),
             price.currency,
         )

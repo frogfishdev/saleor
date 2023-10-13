@@ -190,7 +190,7 @@ class BasePlugin:
         return NotImplemented
 
     def apply_taxes_to_shipping(
-        self, price: Money, shipping_address: "Address", previous_value: TaxedMoney
+        self, price: Money, shipping_address: "Address", root: Any, previous_value: TaxedMoney
     ) -> TaxedMoney:
         """Apply taxes to the shipping costs based on the shipping address.
 

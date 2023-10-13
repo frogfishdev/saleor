@@ -226,7 +226,7 @@ class Checkout(CountableDjangoObjectType):
                 # ignore mypy checking because it is checked in
                 # get_valid_shipping_methods_for_checkout
                 taxed_price = manager.apply_taxes_to_shipping(
-                    shipping_method.price, root.shipping_address  # type: ignore
+                    shipping_method.price, root.shipping_address, root  # type: ignore
                 )
                 if display_gross:
                     shipping_method.price = taxed_price.gross

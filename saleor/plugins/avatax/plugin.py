@@ -485,3 +485,22 @@ class AvataxPlugin(BasePlugin):
                 )
 
             cls.validate_authentication(plugin_configuration)
+
+
+    def apply_taxes_to_shipping(
+        self, price: Money, shipping_address: "Address", root: "Any", previous_value: TaxedMoney
+    ) -> TaxedMoney:
+        taxes_data = get_checkout_tax_data(root, [], self.config)
+
+        currency = taxes_data.get("currencyCode")
+        for line in taxes_data.get("lines", []):
+            if line.get("itemCode") == "Shipping":
+                tax = Decimal(line.get("tax", 0.0))
+                line_net = Decimal(line["lineAmount"])
+                line_gross = Money(amount=line_net + tax, currency=currency)
+                line_net = Money(amount=line_net, currency=currency)
+                return TaxedMoney(net=line_net, gross=line_gross)
+
+        return TaxedMoney(price, price)
+
+    
