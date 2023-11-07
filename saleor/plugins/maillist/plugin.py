@@ -57,9 +57,9 @@ class MailListPlugin(BasePlugin):
         error = None
         ret = {}
         email = request.POST['email']
-        first_name = request.POST['first_name']
-        last_name = request.POST['last_name']
-        state = request.POST['state']
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        state = request.POST.get('state')
 
         if maillist_models.MailListParticipant.objects.filter(email=email):
             return None, "Email already in mailing list"
